@@ -11,7 +11,7 @@ if __name__ == '__main__':
     # init lists for graphs
     compression_ratio_arr, frobenius_distance_arr, x_axis = [0] * 512, [0] * 512, [0] * 512
     samples = [15, 50, 230, 401, 500]
-    samples_grid_location = [3, 4, 7, 8, 11]  # loaction on grid for every sample
+    samples_grid_location = [3, 4, 7, 8, 11]  # location on grid for every sample
     
     for k in range(0, 512, 1):
         x_axis[k] = k
@@ -25,13 +25,13 @@ if __name__ == '__main__':
         compression_ratio_arr[k] = 1 - (((2 * k * 512) + k) / ((2 * 512 * 512) + 512))  # compression ratio
         frobenius_distance_arr[k] = norm(ascent - approximation_matrix)
 
-	# show 5 samples of comperssion of image
+    # show 5 samples of compression of image
         if k in samples:
             subplot(3, 4, samples_grid_location[samples.index(k)])
             title('K: ' + str(k), fontweight="bold", fontsize=8)
             imshow(approximation_matrix)
 
-    #graphs of compression ratio and frobenius distance
+    # graphs of compression ratio and frobenius distance
     suptitle('Graphs', fontweight="bold", fontsize=13)
     subplot(3, 4, (1, 2))
     plot(x_axis, frobenius_distance_arr, '-')
