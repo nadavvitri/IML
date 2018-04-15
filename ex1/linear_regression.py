@@ -38,19 +38,17 @@ def training_data():
         test.drop(['price'], axis=1, inplace=True)
         # model for prediction
         w = np.matmul(np.transpose(np.linalg.pinv(np.transpose(train))), y_train)
-        # w = np.linalg.pinv(train).dot(y_train)
         # calculate train error by MSE
-        y_head_train = train.dot(w)
-        train_error.append(np.linalg.norm(y_head_train - y_train))
+        train_predicted = train.dot(w)
+        train_error.append(np.linalg.norm(train_predicted - y_train) / train.shape[0])
         # calculate test error by MSE
-        y_head_test = test.dot(w)
-        test_error.append(np.linalg.norm(y_head_test - y_test))
-
-    suptitle('Graphs', fontweight="bold", fontsize=13)
+        test_predict = test.dot(w)
+        test_error.append(np.linalg.norm(test_predict - y_test) / test.shape[0])
+    suptitle('Train and Test error (MSE)', fontweight="bold", fontsize=13)
     subplot(111)
-    plot(x_axis, test_error, '-')
+    plot(x_axis, train_error, x_axis, test_error, '-')
+    legend(('train error', 'test error'), loc='upper right')
     xlabel('x value', fontweight="bold")
-    ylabel('Train error (MSE)', fontweight="bold")
     show()
 
 
