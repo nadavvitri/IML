@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import math
 from matplotlib.pyplot import *
 
 
@@ -7,18 +8,18 @@ def pre_processing():
     data = pd.read_csv("kc_house_data.csv")
 
     # can't be < 0 , e.g like price
-    cols_to_clean = ["price", "bedrooms", "bathrooms", "sqft_living", "sqft_lot", "floors", "waterfront", "view",
-                     "condition", "grade", "sqft_above", "sqft_basement", "yr_built", "yr_renovated", "zipcode",
-                     "sqft_living15", "sqft_lot15"]
+    cols_to_clean = ['price', 'bedrooms', 'bathrooms', 'sqft_lot', 'floors', 'waterfront', 'view',
+                     'condition', 'grade', 'sqft_above', 'sqft_basement', 'yr_built', 'yr_renovated', 'zipcode',
+                     'sqft_living15', 'sqft_lot15']
     cols_to_clean_zeros = ['sqft_living', 'sqft_lot', 'floors', 'sqft_above', 'yr_built', 'sqft_living15', 'sqft_lot15']
     for col in cols_to_clean:
         data[col] = [None if i < 0 else i for i in data[col]]
     data[cols_to_clean_zeros] = data[cols_to_clean_zeros].replace(0, np.NaN)
     data.dropna(inplace=True)
 
-    # remove id and date columns
-    data.drop(['id', 'date'], axis=1, inplace=True)
-    data = pd.get_dummies(data, columns=["zipcode"], drop_first=True)  # One Hot encoding for zip code
+    # remove id and date columns and sqrt_living (linear independence sqft_above + sqft_basement = sqft_living)
+    data.drop(['id', 'date', 'sqft_living'], axis=1, inplace=True)
+    data = pd.get_dummies(data, columns=['zipcode'], drop_first=True)  # One Hot encoding for zip code
     return data
 
 
@@ -47,12 +48,16 @@ def training_data():
         test.drop(['price'], axis=1, inplace=True)
         # model for prediction
         w = np.matmul(np.transpose(np.linalg.pinv(np.transpose(train))), y_train)
+
         # calculate train error by MSE
         train_predicted = train.dot(w)
-        train_error.append(np.linalg.norm(train_predicted - y_train) / train.shape[0])
+        train_difference = train_predicted - y_train
+        train_error.append(train_difference.mul(train_difference).mean())
         # calculate test error by MSE
         test_predict = test.dot(w)
-        test_error.append(np.linalg.norm(test_predict - y_test) / test.shape[0])
+        test_difference = test_predict - y_test
+        test_error.append(test_difference.mul(test_difference).mean())
+
     graph(x_axis, train_error, test_error)
 
 
