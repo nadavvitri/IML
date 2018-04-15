@@ -22,6 +22,15 @@ def pre_processing():
     return data
 
 
+def graph(x, train_error, test_error):
+    suptitle('Train and Test error (MSE)', fontweight="bold", fontsize=13)
+    subplot(111)
+    plot(x, train_error, x, test_error, '-')
+    legend(('train error', 'test error'), loc='upper right')
+    xlabel('x value', fontweight="bold")
+    show()
+
+
 def training_data():
     train_error, test_error, x_axis = [], [], []
     data = pre_processing()
@@ -44,12 +53,7 @@ def training_data():
         # calculate test error by MSE
         test_predict = test.dot(w)
         test_error.append(np.linalg.norm(test_predict - y_test) / test.shape[0])
-    suptitle('Train and Test error (MSE)', fontweight="bold", fontsize=13)
-    subplot(111)
-    plot(x_axis, train_error, x_axis, test_error, '-')
-    legend(('train error', 'test error'), loc='upper right')
-    xlabel('x value', fontweight="bold")
-    show()
+    graph(x_axis, train_error, test_error)
 
 
 if __name__ == '__main__':
