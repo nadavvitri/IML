@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import math
 from matplotlib.pyplot import *
 
 
@@ -28,7 +27,7 @@ def graph(x, train_error, test_error):
     subplot(111)
     plot(x, train_error, x, test_error, '-')
     legend(('train error', 'test error'), loc='upper right')
-    xlabel('x value', fontweight="bold")
+    xlabel('train is x% from data', fontweight="bold")
     show()
 
 
@@ -36,27 +35,30 @@ def training_data():
     train_error, test_error, x_axis = [], [], []
     data = pre_processing()
     for x in range(1, 100):
+        train_mse, test_mse = 0, 0
         x_axis.append(x)
-        # train data set and labels
-        train = data.sample(frac=x/100)
-        y_train = train.price
-        train.drop(['price'], axis=1, inplace=True)
-
-        # test data set and labels
-        test = data.drop(train.index)
-        y_test = test.price
-        test.drop(['price'], axis=1, inplace=True)
-        # model for prediction
-        w = np.matmul(np.transpose(np.linalg.pinv(np.transpose(train))), y_train)
-
-        # calculate train error by MSE
-        train_predicted = train.dot(w)
-        train_difference = train_predicted - y_train
-        train_error.append(train_difference.mul(train_difference).mean())
-        # calculate test error by MSE
-        test_predict = test.dot(w)
-        test_difference = test_predict - y_test
-        test_error.append(test_difference.mul(test_difference).mean())
+        # train data set and labels few times
+        for i in range(10):
+            train = data.sample(frac=x/100)
+            y_train = train.price
+            train.drop(['price'], axis=1, inplace=True)
+            # test data set and labels
+            test = data.drop(train.index)
+            y_test = test.price
+            test.drop(['price'], axis=1, inplace=True)
+            # model for prediction
+            w = np.matmul(np.transpose(np.linalg.pinv(np.transpose(train))), y_train)
+            # calculate train error by MSE
+            train_predicted = train.dot(w)
+            train_difference = train_predicted - y_train
+            train_mse += train_difference.mul(train_difference).mean()
+            # calculate test error by MSE
+            test_predict = test.dot(w)
+            test_difference = test_predict - y_test
+            test_mse += test_difference.mul(test_difference).mean()
+        # average
+        train_error.append(train_mse / 10)
+        test_error.append(test_mse / 10)
 
     graph(x_axis, train_error, test_error)
 

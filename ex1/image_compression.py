@@ -1,11 +1,12 @@
 from numpy import diag, zeros, dot
-from numpy.linalg import svd, norm
+from numpy.linalg import svd, norm, matrix_rank
 from matplotlib.pyplot import *
 import scipy.misc as misc
 
 
 def compress_image(samples):
     ascent = misc.ascent()  # image to matrix
+    rank = matrix_rank(ascent)
     u, singular_values, v = svd(ascent)  # SVD for the image
     sigma_k_diag = zeros(512)  # init main diagonal for the reconstruct sigma_k matrix
 
@@ -21,7 +22,7 @@ def compress_image(samples):
         # reconstruct approximation matrix Mk = U Sk V^t
         u_sigma_k_product = dot(u, sigma_k)
         approximation_matrix = dot(u_sigma_k_product, v)
-        compression_ratio_arr[k] = 1 - (((2 * k * 512) + k) / ((2 * 512 * 512) + 512))  # compression ratio
+        compression_ratio_arr[k] = ((2 * k * 512) + k) / ((2 * 512 * rank) + rank)  # compression ratio
         frobenius_distance_arr[k] = norm(ascent - approximation_matrix)
 
         # show 5 samples of compression of image
