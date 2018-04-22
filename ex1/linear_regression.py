@@ -16,8 +16,10 @@ def pre_processing():
     data[cols_to_clean_zeros] = data[cols_to_clean_zeros].replace(0, np.NaN)
     data.dropna(inplace=True)
 
-    # remove id and date columns and sqrt_living (linear independence sqft_above + sqft_basement = sqft_living)
-    data.drop(['id', 'date', 'sqft_living'], axis=1, inplace=True)
+    # add 1 to the 0 column to make this linear function
+    data['id'] = 1
+    # remove date columns and sqrt_living (linear independence sqft_above + sqft_basement = sqft_living)
+    data.drop(['date', 'sqft_living'], axis=1, inplace=True)
     data = pd.get_dummies(data, columns=['zipcode'], drop_first=True)  # One Hot encoding for zip code
     return data
 
@@ -59,7 +61,6 @@ def training_data():
         # average
         train_error.append(train_mse / 10)
         test_error.append(test_mse / 10)
-
     graph(x_axis, train_error, test_error)
 
 
