@@ -22,7 +22,7 @@ def compress_image(samples):
         # reconstruct approximation matrix Mk = U Sk V^t
         u_sigma_k_product = dot(u, sigma_k)
         approximation_matrix = dot(u_sigma_k_product, v)
-        compression_ratio_arr[k] = ((2 * k * 512) + k) / ((2 * 512 * rank) + rank)  # compression ratio
+        compression_ratio_arr[k] = k / rank  # compression ratio
         frobenius_distance_arr[k] = norm(ascent - approximation_matrix)
 
         # show 5 samples of compression of image
