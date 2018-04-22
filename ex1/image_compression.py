@@ -12,7 +12,6 @@ def compress_image(samples):
 
     # init lists for graphs
     compression_ratio_arr, frobenius_distance_arr, x_axis = [0] * 512, [0] * 512, [0] * 512
-    samples_grid_location = [3, 4, 7, 8, 11]  # location on grid for every sample
 
     for k in range(0, 512, 1):
         x_axis[k] = k
@@ -27,25 +26,26 @@ def compress_image(samples):
 
         # show 5 samples of compression of image
         if k in samples:
-            subplot(3, 4, samples_grid_location[samples.index(k)])
-            title('K: ' + str(k), fontweight="bold", fontsize=8)
+            subplot(111)
+            title('K: ' + str(k) + ', cr rate: ' + str(compression_ratio_arr[k])
+                  + ', fro rate: ' + str(frobenius_distance_arr[k]), fontsize=8)
             imshow(approximation_matrix)
+            show()
 
     # graphs of compression ratio and frobenius distance
     ratio_compression_graphs(x_axis, frobenius_distance_arr, compression_ratio_arr)
 
 
 def ratio_compression_graphs(x, frobenius_distance_arr, compression_ratio_arr):
-    suptitle('Graphs', fontweight="bold", fontsize=13)
-    subplot(3, 4, (1, 2))
+    subplot(211)
     plot(x, frobenius_distance_arr, '-')
-    xlabel('k value', fontweight="bold")
-    ylabel('Frobenius distance', fontweight="bold")
+    xlabel('k value')
+    ylabel('Frobenius distance')
 
-    subplot(3, 4, (5, 6))
+    subplot(212)
     plot(x, compression_ratio_arr, '-')
-    xlabel('k value', fontweight="bold")
-    ylabel('Compression ratio', fontweight="bold")
+    xlabel('k value')
+    ylabel('Compression ratio')
     tight_layout()
     show()
 
