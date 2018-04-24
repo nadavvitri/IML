@@ -26,7 +26,7 @@ def bound(epsilon):
             hoeffding.append(min(1.0, 2 * numpy.exp(-2 * m * (e ** 2))))
             chebyshev.append(min(1.0, variance / (m * (e ** 2))))
         plot(m_value, hoeffding, m_value, chebyshev, m_value, np.sum(percentage >= e, 0) / 100000)
-        suptitle('coin tosses experiment: bounds ' + 'epsilon = ' + str(e), fontweight="bold")
+        suptitle('coin tosses experiment: bounds, ' + 'epsilon = ' + str(e), fontweight="bold")
         xlabel('m as number of tosses', fontweight="bold")
         ylabel('probability', fontweight="bold")
         legend(('hoeffding', 'chebyshev', 'percentage of sequences'), loc='upper right')
