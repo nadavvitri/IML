@@ -21,6 +21,11 @@ def pre_processing():
     # remove date columns and sqrt_living (linear independence sqft_above + sqft_basement = sqft_living)
     data.drop(['date', 'sqft_living'], axis=1, inplace=True)
     data = pd.get_dummies(data, columns=['zipcode'], drop_first=True)  # One Hot encoding for zip code
+    # if there is 0 in yr_renovated, change value in this cell with yr_built
+    for row in range(data.shape[0]):
+        label = data.index.values[row]
+        if data.loc[label, 'yr_renovated'] == 0:
+            data.loc[label, 'yr_renovated'] = data.loc[label, 'yr_built']
     return data
 
 
