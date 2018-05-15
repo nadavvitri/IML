@@ -5,7 +5,6 @@ from sklearn.svm import SVC
 class perceptron:
 
     def __init__(self, X, y):
-        self.number_of_samples = X.shape[0]
         self.weight_vector = np.zeros(X.shape[1])
         self.fit(X, y)
 
@@ -39,20 +38,25 @@ class perceptron:
                 accuracy += 1
         return accuracy / 10000
 
+
+def generate_sets():
+        training_points = np.random.multivariate_normal([0, 0], [[1, 0], [0, 1]], m)
+        training_label_points = np.sign(training_points.dot(w))
+        while (-1 or 1) not in training_label_points:
+            training_points = np.random.multivariate_normal([0, 0], [[1, 0], [0, 1]], m)
+            training_label_points = np.sign(training_points.dot(w))
+        return training_points, training_label_points
+
+
 def compare_svm_and_perceptron():
-    number_of_training_points = [5, 10, 15, 25, 70]
-    w = (0.3, -0.5)
+    w = np.array([0.3, -0.5])
     svm_accuracy, perceptron_accuracy = 0, 0
     clf = SVC(C=1e10, kernel='linear')
     for m in number_of_training_points:
         for i in range(1, 500):
-            training_points = np.random.multivariate_normal([0, 0], [[1, 0], [0, 1]], m)
-            training_label_points = np.sign(training_points.dot(w))
-            while -1 not in training_label_points or 1 not in training_label_points:
-                training_points = np.random.multivariate_normal([0, 0], [[1, 0], [0, 1]], m)
-                training_label_points = np.sign(training_points.dot(w))
-
-            test_points = np.random.multivariate_normal([0, 0], [[1, 0], [0, 1]], 10000)
+            # generate training and test sets with labels
+            training_points, training_label_points = generate_sets()
+            test_points = np.random.multivariate_normal([0, 0], [[1, 0], [0, 1]], k)
             test_points_label = np.sign(test_points.dot(w))
 
             per = perceptron(training_points, training_label_points)
@@ -64,5 +68,7 @@ def compare_svm_and_perceptron():
 
 
 if __name__ == '__main__':
+    number_of_training_points = [5, 10, 15, 25, 70]
+    k = 10000
     compare_svm_and_perceptron()
 
