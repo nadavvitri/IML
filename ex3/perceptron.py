@@ -1,12 +1,11 @@
 import numpy as np
 from sklearn.svm import SVC
+import matplotlib.pyplot as plt
 
 
 class perceptron:
 
-    def __init__(self, X, y):
-        self.weight_vector = np.zeros(X.shape[1])
-        self.fit(X, y)
+    weight_vector = None
 
     def fit(self, X, y):
         """
@@ -15,13 +14,14 @@ class perceptron:
         :param y: label vector for matrix x
         """
         flag = True
+        rows, col = X.shape
+        self.weight_vector = np.zeros(col)
         while flag:
-            for row in range(self.number_of_samples):
-                if (y[row] * np.dot(self.weight_vector, X[row])) <= 0:
+            flag = False
+            for row in range(rows):
+                if y[row] * np.dot(self.weight_vector, X[row]) <= 0:
                     self.weight_vector += np.dot(y[row], X[row])
-                else:
-                    flag = False
-                break
+                    flag = True
 
     def predict(self, x):
         """
@@ -29,46 +29,75 @@ class perceptron:
         :param : sample x
         :return: label for x
         """
-        return self.weight_vector * x
+        return np.sign(x.dot(self.weight_vector))
 
-    def calculate_accuracy(self, x, y):
-        accuracy = 0
-        for row in x:
-            if self.predict(row) != y:
-                accuracy += 1
-        return accuracy / 10000
+    def score(self, X, y, sample_weight=None):
+        """
+        Returns the mean accuracy on the given test data and labels.
+        In multi-label classification, this is the subset accuracy
+        which is a harsh metric since you require for each sample that
+        each label set be correctly predicted.
+        :param X: array-like, shape = (n_samples, n_features) Test samples.
+        :param y: array-like, shape = (n_samples) or (n_samples, n_outputs) True labels for X.
+        :param sample_weight : array-like, shape = [n_samples], optional Sample weights.
+        :return score : float Mean accuracy of self.predict(X) wrt. y.
+        """
+        from sklearn.metrics import accuracy_score
+        return accuracy_score(y, self.predict(X), sample_weight=sample_weight)
 
 
-def generate_sets():
-        training_points = np.random.multivariate_normal([0, 0], [[1, 0], [0, 1]], m)
-        training_label_points = np.sign(training_points.dot(w))
-        while (-1 or 1) not in training_label_points:
-            training_points = np.random.multivariate_normal([0, 0], [[1, 0], [0, 1]], m)
-            training_label_points = np.sign(training_points.dot(w))
-        return training_points, training_label_points
+def generate_train_set(m):
+        x_train = np.random.multivariate_normal(np.zeros(2), np.identity(2), m)
+        y_train = np.sign(x_train.dot(w))
+        while len(np.unique(y_train)) <= 1:
+            x_train = np.random.multivariate_normal(np.zeros(2), np.identity(2), m)
+            y_train = np.sign(x_train.dot(w))
+        return x_train, y_train
+
+
+def generate_test_set():
+    x_test = np.random.multivariate_normal(np.zeros(2), np.identity(2), k)
+    y_test = np.sign(x_test.dot(w))
+    return x_test, y_test
 
 
 def compare_svm_and_perceptron():
-    w = np.array([0.3, -0.5])
-    svm_accuracy, perceptron_accuracy = 0, 0
+    svm_accuracy, perceptron_accuracy = [], []
     clf = SVC(C=1e10, kernel='linear')
-    for m in number_of_training_points:
-        for i in range(1, 500):
+    per = perceptron()
+
+    for m in number_of_x_train:
+        per_score, clf_score = 0, 0
+        for i in range(repeat):
             # generate training and test sets with labels
-            training_points, training_label_points = generate_sets()
-            test_points = np.random.multivariate_normal([0, 0], [[1, 0], [0, 1]], k)
-            test_points_label = np.sign(test_points.dot(w))
+            x_train, y_train = generate_train_set(m)
+            x_test, y_test = generate_test_set()
 
-            per = perceptron(training_points, training_label_points)
-            perceptron_accuracy += per.calculate_accuracy(test_points, test_points_label) / i
+            per.fit(x_train, y_train)
+            clf.fit(x_train, y_train)
 
-            clf.fit(training_points, training_label_points)
-            clf.predict(test_points)
-            svm_accuracy += clf.score(test_points, test_points_label) / i
+            per_score += per.score(x_test, y_test)
+            clf_score += clf.score(x_test, y_test)
+
+        perceptron_accuracy.append(per_score / repeat)
+        svm_accuracy.append(clf_score / repeat)
+
+    return perceptron_accuracy, svm_accuracy
+
+def graphs():
+    plt.title("samples from Normal(0, I2)")
+    plt.xlabel("number of train samples")
+    plt.ylabel("mean accuracy")
+    plt.plot(number_of_x_train, per_means, number_of_x_train, svm_means)
+    plt.legend(["perceptron", "SVM"], loc='upper right')
+    plt.show()
+
 
 
 if __name__ == '__main__':
-    number_of_training_points = [5, 10, 15, 25, 70]
+    number_of_x_train = [5, 10, 15, 25, 70]
     k = 10000
-    compare_svm_and_perceptron()
-
+    repeat = 500
+    w = np.array([0.3, -0.5])
+    per_means, svm_means = compare_svm_and_perceptron()
+    graphs()
