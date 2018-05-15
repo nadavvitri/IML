@@ -2,7 +2,9 @@ import numpy as np
 from sklearn.svm import SVC
 import matplotlib.pyplot as plt
 
-
+############################################################
+# Class definition
+############################################################
 class perceptron:
 
     weight_vector = None
@@ -46,13 +48,34 @@ class perceptron:
         return accuracy_score(y, self.predict(X), sample_weight=sample_weight)
 
 
+############################################################
+# Compare SVM and Perceptron from D1 and D2 distributions
+############################################################
+
 def generate_train_set(m):
+    x_train = np.random.multivariate_normal(np.zeros(2), np.identity(2), m)
+    y_train = np.sign(x_train.dot(w))
+    while len(np.unique(y_train)) <= 1:
         x_train = np.random.multivariate_normal(np.zeros(2), np.identity(2), m)
         y_train = np.sign(x_train.dot(w))
-        while len(np.unique(y_train)) <= 1:
-            x_train = np.random.multivariate_normal(np.zeros(2), np.identity(2), m)
-            y_train = np.sign(x_train.dot(w))
-        return x_train, y_train
+    return x_train, y_train
+
+
+def point_from_rec(sign):
+    if sign == 1:
+        return [4 * np.random.random_sample() - 3, 2 * np.random.random_sample() + 1]
+    return [4 * np.random.random_sample() + 3, -2 * np.random.random_sample() - 1]
+
+def rec_generate_train_set(m):
+    x_train = []
+    y_train = []
+    for i in range(m):
+        sign = np.random.choice([-1, 1])
+        x_train.append(point_from_rec(sign))
+        y_train.append(sign)
+    while len(np.unique(y_train)) <= 1:
+        rec_generate_train_set(m)
+    return np.matrix(x_train), y_train
 
 
 def generate_test_set():
@@ -99,5 +122,6 @@ if __name__ == '__main__':
     k = 10000
     repeat = 500
     w = np.array([0.3, -0.5])
+    data,label  = rec_generate_train_set(m=5)
     per_means, svm_means = compare_svm_and_perceptron()
-    graphs()
+    #graphs()
