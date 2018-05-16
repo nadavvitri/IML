@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 ############################################################
 # Class definition
 ############################################################
+
 class perceptron:
 
     weight_vector = None
@@ -52,7 +53,7 @@ class perceptron:
 # Compare SVM and Perceptron from D1 and D2 distributions
 ############################################################
 
-def generate_train_set(m):
+def generate_train_from_D1(m):
     x_train = np.random.multivariate_normal(np.zeros(2), np.identity(2), m)
     y_train = np.sign(x_train.dot(w))
     while len(np.unique(y_train)) <= 1:
@@ -61,30 +62,63 @@ def generate_train_set(m):
     return x_train, y_train
 
 
-def point_from_rec(sign):
-    if sign == 1:
-        return [4 * np.random.random_sample() - 3, 2 * np.random.random_sample() + 1]
-    return [4 * np.random.random_sample() + 3, -2 * np.random.random_sample() - 1]
-
-def rec_generate_train_set(m):
-    x_train = []
-    y_train = []
-    for i in range(m):
-        sign = np.random.choice([-1, 1])
-        x_train.append(point_from_rec(sign))
-        y_train.append(sign)
-    while len(np.unique(y_train)) <= 1:
-        rec_generate_train_set(m)
-    return np.matrix(x_train), y_train
-
-
-def generate_test_set():
+def generate_test_from_D1():
     x_test = np.random.multivariate_normal(np.zeros(2), np.identity(2), k)
     y_test = np.sign(x_test.dot(w))
     return x_test, y_test
 
 
-def compare_svm_and_perceptron():
+def point_from_rec_one(m):
+    x = 4 * np.random.random_sample((m, 1)) - 3
+    y = 2 * np.random.random_sample((m, 1)) + 1
+    return np.concatenate((x, y), axis=1)
+
+
+def point_from_rec_minus_one(m):
+    x = 4 * np.random.random_sample((m, 1)) - 1
+    y = 2 * np.random.random_sample((m, 1)) - 3
+    return np.concatenate((x, y), axis=1)
+
+
+def generate_sets_from_rectangles(size):
+    number_of_points_label_1 = np.random.binomial(size, 0.5)
+    rec_one = point_from_rec_one(number_of_points_label_1)
+    rec_one_label = np.full((number_of_points_label_1,), 1)
+
+    rec_minus_one = point_from_rec_minus_one(size - number_of_points_label_1)
+    rec_minus_one_label = np.full((size - number_of_points_label_1,), - 1)
+
+    x_train = np.concatenate((rec_one, rec_minus_one), axis=0)
+    y_train = np.concatenate((rec_one_label, rec_minus_one_label), axis=0)
+    return x_train, y_train
+
+
+def generate_train_from_D2(m):
+    x_train, y_train = generate_sets_from_rectangles(m)
+    if len(np.unique(y_train)) <= 1:
+        x_train, y_train = generate_train_from_D2(m)
+        return x_train, y_train
+    return x_train, y_train
+
+
+def generate_test_from_D2():
+    x_test, y_test = generate_sets_from_rectangles(k)
+    return x_test, y_test
+
+
+def generate_train_from_D(m, d):
+    if d == 1:
+        return generate_train_from_D1(m)
+    return generate_train_from_D2(m)
+
+
+def generate_test_from_D(d):
+    if d == 1:
+        return generate_test_from_D1()
+    return generate_test_from_D2()
+
+
+def compare_svm_and_perceptron(d):
     svm_accuracy, perceptron_accuracy = [], []
     clf = SVC(C=1e10, kernel='linear')
     per = perceptron()
@@ -93,8 +127,8 @@ def compare_svm_and_perceptron():
         per_score, clf_score = 0, 0
         for i in range(repeat):
             # generate training and test sets with labels
-            x_train, y_train = generate_train_set(m)
-            x_test, y_test = generate_test_set()
+            x_train, y_train = generate_train_from_D(m, d)
+            x_test, y_test = generate_test_from_D(d)
 
             per.fit(x_train, y_train)
             clf.fit(x_train, y_train)
@@ -107,14 +141,14 @@ def compare_svm_and_perceptron():
 
     return perceptron_accuracy, svm_accuracy
 
-def graphs():
-    plt.title("samples from Normal(0, I2)")
+def graphs(title, per_means, svm_means):
+    fig = plt.figure()
+    plt.title(title)
     plt.xlabel("number of train samples")
     plt.ylabel("mean accuracy")
-    plt.plot(number_of_x_train, per_means, number_of_x_train, svm_means)
+    plt.plot(number_of_x_train, per_means, number_of_x_train, svm_means, marker='o')
     plt.legend(["perceptron", "SVM"], loc='upper right')
-    plt.show()
-
+    return fig
 
 
 if __name__ == '__main__':
@@ -122,6 +156,12 @@ if __name__ == '__main__':
     k = 10000
     repeat = 500
     w = np.array([0.3, -0.5])
-    data,label  = rec_generate_train_set(m=5)
-    per_means, svm_means = compare_svm_and_perceptron()
-    #graphs()
+
+    per_means_D1, svm_means_D1 = compare_svm_and_perceptron(d=1)
+    per_means_D2, svm_means_D2 = compare_svm_and_perceptron(d=2)
+
+    title_figure_1 = "samples from Normal(0, I2)"
+    title_figure_2 = "samples from D2"
+    graphs(title_figure_1, per_means_D1, svm_means_D1)
+    graphs(title_figure_2, per_means_D2, svm_means_D2)
+    plt.show()
