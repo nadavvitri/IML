@@ -1,5 +1,7 @@
 import numpy as np
+import pandas as pd
 from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
 import matplotlib.pyplot as plt
 
 ############################################################
@@ -141,6 +143,7 @@ def compare_svm_and_perceptron(d):
 
     return perceptron_accuracy, svm_accuracy
 
+
 def graphs(title, per_means, svm_means):
     fig = plt.figure()
     plt.title(title)
@@ -151,7 +154,53 @@ def graphs(title, per_means, svm_means):
     return fig
 
 
+def split_train_test():
+    data = pd.read_csv("spam.data", sep=" ", header=None)
+    # test data set and labels
+    x_test = data.sample(1000)
+    y_test = x_test[len(x_test.columns) - 1]
+    x_test.drop(x_test.columns[len(x_test.columns) - 1], axis=1, inplace=True)
+    # train data set and labels
+    x_train = data.drop(x_test.index)
+    y_train = x_train[len(x_train.columns) - 1]
+    x_train.drop(x_train.columns[len(x_train.columns) - 1], axis=1, inplace=True)
+    return x_train, y_train, x_test, y_test
+
+
+def tpr_and_fpr(x_train, y_train, x_test, y_test):
+    logistic = LogisticRegression()
+    logistic.fit(x_train, y_train)
+
+    probabilities = logistic.predict_proba(x_test)
+    probabilities_sorted = np.argsort(probabilities[0])
+
+    NP = sum(x > 0 for x in y_test)
+    NN = y_test.shpae[0] - NP
+    Ni, TPR = [], []
+
+    for i in range(1, NP + 1):
+        count, threshold = 0, 0
+        for sample_id in probabilities_sorted[0]:
+            if count == i:
+                Ni.append(threshold)
+                TPR.append((threshold - i) / NN)
+
+            if y_test[sample_id] == 1:
+                count += 1
+
+            threshold += 1
+
+def empirical_roc():
+    for i in range(10):
+        x_train, y_train, x_test, y_test = split_train_test()
+        tpr_and_fpr(x_train, y_train, x_test, y_test)
+
+
+
+    print 4
+
 if __name__ == '__main__':
+    empirical_roc()
     number_of_x_train = [5, 10, 15, 25, 70]
     k = 10000
     repeat = 500
