@@ -186,18 +186,20 @@ def tpr_and_fpr(x_train, y_train, x_test, y_test):
     NN = y_test.size - NP
     TPR, FPR = [], []
 
-    for i in range(1, NP + 1):
-        count, threshold = 0, 0
-        for sample_id in probabilities_sorted:
-            if count == i:
-                TPR.append(threshold)
-                FPR.append((threshold - i) / NN)
-                break
+    count, threshold, i = 0, 0, 1
+    for sample_id in probabilities_sorted:
+        if i == NP + 1:
+            break
 
-            if y_test.iloc[sample_id] == 1:
-                count += 1
+        if count == i:
+            TPR.append(threshold)
+            FPR.append((threshold - i) / NN)
+            i += 1
 
-            threshold += 1
+        if y_test.iloc[sample_id] == 1:
+            count += 1
+
+        threshold += 1
 
     TPR.extend((0, 1)), FPR.extend((0, 1))
     return TPR, FPR
@@ -206,17 +208,17 @@ def tpr_and_fpr(x_train, y_train, x_test, y_test):
 def empirical_roc():
     average_TPR, average_FPR = [], []
     # 10 times for smoother roc curve
-    for i in range(10):
-        x_train, y_train, x_test, y_test = split_train_test()
-        TPR, FPR = tpr_and_fpr(x_train, y_train, x_test, y_test)
-        average_TPR.append(TPR)
-        average_FPR.append(FPR)
+#    for i in range(10):
+    x_train, y_train, x_test, y_test = split_train_test()
+    TPR, FPR = tpr_and_fpr(x_train, y_train, x_test, y_test)
+    average_TPR.append(TPR)
+    average_FPR.append(FPR)
 
     # average of 10 times of the procedure above
-    average_TPR = [sum(e)/len(e) for e in zip(*average_TPR)]
-    average_FPR = [sum(e)/len(e) for e in zip(*average_FPR)]
+#    average_TPR = [sum(e)/len(e) for e in zip(*average_TPR)]
+#    average_FPR = [sum(e)/len(e) for e in zip(*average_FPR)]
 
-    return roc_graph(average_FPR, average_TPR)
+    return roc_graph(FPR,TPR)
 
 
 if __name__ == '__main__':
