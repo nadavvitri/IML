@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 # Class definition
 ############################################################
 
+
 class perceptron:
 
     weight_vector = None

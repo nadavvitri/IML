@@ -6,6 +6,7 @@ from collections import Counter
 # Class definition
 ############################################################
 
+
 class knn:
 
     def __init__(self, k):
@@ -29,9 +30,9 @@ class knn:
         :return: label for x
         """
         distances = []
-        for index in range(len(self.x_train)):
-            dist = np.linalg.norm(x - self.x_train[index])
-            distances.append((dist, self.y_train[index]))
+        #for index in range(len(self.x_train)):
+        dist = np.linalg.norm(x - self.x_train)
+        distances.append((dist, self.y_train))
 
         # sort by euclidean distance and save only the k nearest neighbors
         distances.sort(key=lambda x: x[0])
@@ -52,7 +53,7 @@ def split_train_test():
     x_train = data.drop(x_test.index)
     y_train = x_train[len(x_train.columns) - 1]
     x_train.drop(x_train.columns[len(x_train.columns) - 1], axis=1, inplace=True)
-    return x_train, y_train, x_test, y_test
+    return x_train.as_matrix(), y_train.as_matrix(), x_test.as_matrix(), y_test.as_matrix()
 
 
 if __name__ == '__main__':
@@ -67,10 +68,11 @@ if __name__ == '__main__':
         knn.fit(x_train, y_train)
         # calculate the classification accuracy
         for sample_id in range(number_of_prediction):
-            if knn.predict(x_test.iloc[sample_id]) == y_test.iloc[sample_id]:
+            if knn.predict(x_test[sample_id]) == y_test[sample_id]:
                 correct += 1
 
         classification_accuracy.append(correct / number_of_prediction)
 
-    print classification_accuracy
+    print(classification_accuracy)
+
 
