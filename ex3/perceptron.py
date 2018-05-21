@@ -1,4 +1,3 @@
-from __future__ import division
 import numpy as np
 import pandas as pd
 from sklearn.svm import SVC
@@ -184,40 +183,24 @@ def tpr_and_fpr(x_train, y_train, x_test, y_test):
 
     NP = sum(x > 0 for x in y_test)
     NN = y_test.size - NP
-    TPR, FPR = [], []
+    TPR, FPR = [0], [0]
 
-    count, threshold, i = 0, 0, 1
-    for sample_id in probabilities_sorted:
-        if i == NP + 1:
-            break
+    count, k = 0, 0
+    for i in range(1, NP + 1):
+        while count < i:
+            count += y_test.iloc[probabilities_sorted[k]]
+            k += 1
+            
+        TPR.append(i / NP)
+        FPR.append((k - i) / NN)
 
-        if count == i:
-            TPR.append(threshold)
-            FPR.append((threshold - i) / NN)
-            i += 1
-
-        if y_test.iloc[sample_id] == 1:
-            count += 1
-
-        threshold += 1
-
-    TPR.extend((0, 1)), FPR.extend((0, 1))
+    TPR.append(1), FPR.append(1)
     return TPR, FPR
 
 
 def empirical_roc():
-    average_TPR, average_FPR = [], []
-    # 10 times for smoother roc curve
-#    for i in range(10):
     x_train, y_train, x_test, y_test = split_train_test()
     TPR, FPR = tpr_and_fpr(x_train, y_train, x_test, y_test)
-    average_TPR.append(TPR)
-    average_FPR.append(FPR)
-
-    # average of 10 times of the procedure above
-#    average_TPR = [sum(e)/len(e) for e in zip(*average_TPR)]
-#    average_FPR = [sum(e)/len(e) for e in zip(*average_FPR)]
-
     return roc_graph(FPR,TPR)
 
 
@@ -236,7 +219,7 @@ if __name__ == '__main__':
     graphs(title_figure_1, per_means_D1, svm_means_D1)
     graphs(title_figure_2, per_means_D2, svm_means_D2)
 
-    # Question 8
+    # Question 8 a, b
     empirical_roc()
 
     # Show all plots
